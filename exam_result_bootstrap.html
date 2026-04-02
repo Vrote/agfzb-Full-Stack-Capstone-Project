@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<title>Exam Result</title>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+  <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Online Course App</a>
+  {% if user.is_authenticated %}
+  <span class="navbar-text text-white mr-3">Welcome, {{ user.username }}</span>
+  <a href="{% url 'onlinecourse:logout' %}" class="btn btn-outline-light btn-sm">Logout</a>
+  {% endif %}
+</nav>
+
+<div class="container mt-4">
+  <h3>{{ course.name }} - Exam Result</h3>
+
+  {% if total_score >= 80 %}
+  <div class="alert alert-success">
+    <h4>Congratulations! You passed the exam!</h4>
+    <p>Your total score is <strong>{{ total_score }}</strong> out of 100</p>
+  </div>
+  {% else %}
+  <div class="alert alert-danger">
+    <h4>You did not pass. Please try again.</h4>
+    <p>Your total score is <strong>{{ total_score }}</strong> out of 100</p>
+  </div>
+  {% endif %}
+
+  <h4>Exam Results:</h4>
+  {% for question in course.question_set.all %}
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <b>{{ question.content }}</b>
+      {% if question.is_get_score selected_ids %}
+      <span class="badge badge-success">Correct</span>
+      {% else %}
+      <span class="badge badge-danger">Incorrect</span>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      {% for choice in question.choice_set.all %}
+      <div class="mb-1">
+        {% if choice.is_correct %}
+        <span class="text-success"><b>&#10004; {{ choice.content }}</b></span>
+        {% if choice.id in selected_ids %}
+        <span class="badge badge-success">Your answer</span>
+        {% endif %}
+        {% else %}
+        <span class="text-danger">&#10008; {{ choice.content }}</span>
+        {% if choice.id in selected_ids %}
+        <span class="badge badge-danger">Your answer</span>
+        {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <a href="{% url 'onlinecourse:course_details' course.id %}" class="btn btn-primary mb-4">Back to Course</a>
+</div>
+</body>
+</html>
