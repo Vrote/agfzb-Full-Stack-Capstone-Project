@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<title>{{ course.name }}</title>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+  <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Online Course App</a>
+  {% if user.is_authenticated %}
+  <span class="navbar-text text-white mr-3">Welcome, {{ user.username }}</span>
+  <a href="{% url 'onlinecourse:logout' %}" class="btn btn-outline-light btn-sm">Logout</a>
+  {% else %}
+  <a href="{% url 'onlinecourse:login' %}" class="btn btn-outline-light btn-sm mr-2">Login</a>
+  <a href="{% url 'onlinecourse:registration' %}" class="btn btn-outline-light btn-sm">Register</a>
+  {% endif %}
+</nav>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h2>{{ course.name }}</h2>
+      <img src="{{ course.image.url }}" class="img-fluid mb-3" alt="{{ course.name }}" style="max-height:300px;">
+      <p>{{ course.description }}</p>
+      {% if not course.is_enrolled %}
+      <form action="{% url 'onlinecourse:enroll' course.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary mb-4">Enroll</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <h3>Lessons</h3>
+      {% for lesson in course.lesson_set.all %}
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5>Lesson {{ forloop.counter }}: {{ lesson.title }}</h5>
+        </div>
+        <div class="card-body">
+          <p>{{ lesson.content }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if course.is_enrolled %}
+  <div class="row mt-4">
+    <div class="col-12">
+      <h3>Exam</h3>
+      <form action="{% url 'onlinecourse:submit' course.id %}" method="post">
+        {% csrf_token %}
+        {% for question in course.question_set.all %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <b>Question {{ forloop.counter }}: {{ question.content }}</b>
+            <span class="badge badge-primary float-right">{{ question.grade }} points</span>
+          </div>
+          <div class="card-body">
+            {% for choice in question.choice_set.all %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     name="choice"
+                     id="choice_{{ choice.id }}"
+                     value="{{ choice.id }}">
+              <label class="form-check-label" for="choice_{{ choice.id }}">
+                {{ choice.content }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success mb-4">Submit Exam</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>
